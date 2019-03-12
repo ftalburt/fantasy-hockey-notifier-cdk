@@ -1,0 +1,14 @@
+{
+  "name": "fantasy-hockey-notifier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "fantasy-hockey-notifier.js",
+  "scripts": {},
+  "author": "Forrest Talburt",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.377.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
