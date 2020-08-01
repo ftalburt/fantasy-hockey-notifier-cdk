@@ -5,7 +5,7 @@
   "main": "fantasy-hockey-notifier.js",
   "scripts": {},
   "author": "Forrest Talburt",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.377.0",
     "request": "^2.88.0",
