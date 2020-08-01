@@ -1,14 +1,22 @@
 {
   "name": "fantasy-hockey-notifier",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "fantasy-hockey-notifier.js",
   "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ftalburt/fantasy-hockey-notifier.git"
+  },
   "author": "Forrest Talburt",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ftalburt/fantasy-hockey-notifier/issues"
+  },
+  "homepage": "https://github.com/ftalburt/fantasy-hockey-notifier#readme",
   "dependencies": {
-    "aws-sdk": "^2.377.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5"
+    "aws-sdk": "^2.725.0",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9"
   }
 }
