@@ -1,0 +1,49 @@
+service: fantasy-hockey-notifier
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    FH_LEAGUE_ID: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/FH_LEAGUE_ID~true}
+    FH_SEASON: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/FH_SEASON}
+    ESPN_S2_COOKIE: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/ESPN_S2_COOKIE~true}
+    DISCORD_WEBHOOK: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/DISCORD_WEBHOOK~true}
+    AWS_DYNAMO_DB_TABLE_NAME: fantasy-hockey-notifier-${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/fantasy-hockey-notifier-${self:provider.stage}'
+
+functions:
+  fantasy-hockey-notifier:
+    handler: fantasy-hockey-notifier.main
+    name: fantasy-hockey-notifier-${self:provider.stage}
+    memorySize: 128
+    timeout: 10
+    events:
+      - eventBridge:
+          schedule: rate(1 minute)
+
+resources:
+  Resources:
+    fantasyHockeyNotifierTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: fantasy-hockey-notifier-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: keyName
+            AttributeType: S
+        KeySchema:
+          - AttributeName: keyName
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-pseudo-parameters

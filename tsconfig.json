@@ -1,0 +1,7 @@
+{
+  "extends": "@tsconfig/node12",
+  "compilerOptions": {
+    "outDir": ".build",
+    "sourceMap": true
+  }
+}

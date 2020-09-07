@@ -1,2 +1,12 @@
 # Dependency directory
 node_modules/
+# local environment variables
+.env
+# local file for recording last run date of application
+.lastrun
+# Compiled typescript files
+.build/
+# Serverless directories
+.serverless
+# VS Code settings
+.vscode/
