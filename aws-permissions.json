@@ -77,7 +77,7 @@
                 "lambda:Update*"
             ],
             "Resource": [
-                "arn:aws:lambda:us-east-1:*:function:fantasy-hockey-notifier-*-*"
+                "arn:aws:lambda:us-east-1:*:function:fantasy-hockey-notifier-*"
             ]
         },
         {
@@ -137,7 +137,7 @@
                 "events:DescribeRule"
             ],
             "Resource": [
-                "arn:aws:events:us-east-1:*:rule/fantasy-hockey-notifier-*-*"
+                "arn:aws:events:us-east-1:*:rule/fantasy-hockey-notifier-*"
             ]
         },
         {
@@ -159,7 +159,7 @@
                 "iam:DeleteRole"
             ],
             "Resource": [
-                "arn:aws:iam::*:role/fantasy-hockey-notifier-*-us-east-1-lambdaRole"
+                "arn:aws:iam::*:role/fantasy-hockey-notifier-*"
             ]
         },
         {
@@ -170,6 +170,20 @@
             "Resource": [
                 "arn:aws:dynamodb:*:*:table/fantasy-hockey-notifier-*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "ssm:GetParameter",
+            "Resource": "arn:aws:ssm:us-east-1:*:parameter/fantasy-hockey-notifier/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:DescribeKey"
+            ],
+            "Resource": "arn:aws:kms:us-east-1:*:key/*"
         }
     ]
 }
