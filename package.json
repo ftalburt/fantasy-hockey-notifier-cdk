@@ -3,8 +3,8 @@
   "version": "2.0.0",
   "description": "Send notifications for transactions in an ESPN Fantasy Hockey league; designed to be used with AWS Lambda",
   "scripts": {
-    "start": "npm run build && node -r dotenv/config .build/main.js",
-    "start-prebuilt": "node -r dotenv/config .build/main.js",
+    "start": "npm run build && node -r dotenv/config .build/src/main.js",
+    "start-prebuilt": "node -r dotenv/config .build/src/main.js",
     "build": "tsc",
     "test": "echo \"No tests for now\" && exit 0",
     "serverless-version": "serverless --version",

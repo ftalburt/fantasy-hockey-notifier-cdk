@@ -20,7 +20,7 @@ provider:
 
 functions:
   fantasy-hockey-notifier:
-    handler: fantasy-hockey-notifier.main
+    handler: src/fantasy-hockey-notifier.main
     name: fantasy-hockey-notifier-${self:provider.stage}
     memorySize: 128
     timeout: 10
