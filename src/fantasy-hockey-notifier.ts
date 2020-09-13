@@ -264,7 +264,6 @@ function getFantasyTeam(
 ): FantasyHockeyTypes.FhLeagueTeam {
   let team = fantasyLeagueTeams.find((team) => team.id == fantasyTeamId);
   if (!team) {
-    console.log(fantasyTeamId);
     throw new Error(
       `Could not find team in list of ESPN fantasy teams (ID: ${fantasyTeamId})`
     );
@@ -283,7 +282,6 @@ function getNhlTeam(
 ): FantasyHockeyTypes.ProTeam {
   let team = nhlTeams.find((team) => team.id == nhlTeamId);
   if (!team) {
-    console.log(nhlTeamId);
     throw new Error(
       `Could not find team in list of NHL teams (ID: ${nhlTeamId})`
     );
