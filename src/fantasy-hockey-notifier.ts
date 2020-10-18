@@ -47,7 +47,9 @@ export async function main(): Promise<void> {
       // Sorted list of adds and drops
       dataAccessMethods.getMessages(FH_SEASON, FH_LEAGUE_ID, ESPN_S2_COOKIE, {
         topics: {
-          filterIncludeMessageTypeIds: { value: [178, 179, 180, 181, 239] },
+          filterIncludeMessageTypeIds: {
+            value: [178, 179, 180, 181, 224, 225, 239, 244, 245],
+          },
           sortMessageDate: {
             sortPriority: 1,
             sortAsc: true,
@@ -105,6 +107,10 @@ function getFormattedMessage(
 ): string {
   let formattedMessages = "";
   messages.forEach((topic) => {
+    let topicHeader = getTopicHeader(topic);
+    if (topicHeader) {
+      formattedMessages += `${topicHeader}\n`;
+    }
     topic.messages.forEach((message) => {
       updateHumanReadableMessage(
         message,
@@ -112,12 +118,22 @@ function getFormattedMessage(
         leagueData.teams,
         nhlTeamData.settings.proTeams
       );
-      formattedMessages += `${message.humanReadableMessage}\n`;
+      formattedMessages += `${topicHeader ? "    ": ""}${message.humanReadableMessage}\n`;
     });
     formattedMessages.trim();
     formattedMessages += "\n";
   });
   return formattedMessages.trim();
+}
+
+export function getTopicHeader(topic: FantasyHockeyTypes.MessageTopic): string {
+  if (topic.messages.some((message) => message.messageTypeId == 224)) {
+    return "Trade Accepted:";
+  } else if (topic.messages.some((message) => message.messageTypeId == 244)) {
+    return "Trade Processed:";
+  } else {
+    return "";
+  }
 }
 
 /**
@@ -366,7 +382,54 @@ function updateHumanReadableMessage(
         "dropped",
         message.to
       );
-
+      break;
+    // Trade accepted
+    case 224:
+      genericUpdateHumanReadableMessage(
+        message,
+        players,
+        fantasyLeagueTeams,
+        nhlTeams,
+        "trades",
+        message.from,
+        undefined,
+        message.to
+      );
+      break;
+    // Trade processed
+    case 244:
+      genericUpdateHumanReadableMessage(
+        message,
+        players,
+        fantasyLeagueTeams,
+        nhlTeams,
+        "traded",
+        message.from,
+        undefined,
+        message.to
+      );
+      break;
+    // Trade accepted drop
+    case 225:
+      genericUpdateHumanReadableMessage(
+        message,
+        players,
+        fantasyLeagueTeams,
+        nhlTeams,
+        "drops",
+        message.from
+      );
+      break;
+    // Trade processed drop
+    case 245:
+      genericUpdateHumanReadableMessage(
+        message,
+        players,
+        fantasyLeagueTeams,
+        nhlTeams,
+        "dropped",
+        message.from
+      );
       break;
     // Drop from roster
     case 239:
@@ -393,6 +456,7 @@ function updateHumanReadableMessage(
  * @param action The action that the fantasy hockey team performed (i.e. `dropped`)
  * @param teamId The ID of the fantasy hockey team that made the transaction
  * @param fromName The location the player is moving from (i.e. `Waivers`)
+ * @param toTeamId The ID of the fantasy hockey team the player is moving to
  */
 function genericUpdateHumanReadableMessage(
   message: FantasyHockeyTypes.Message,
@@ -401,7 +465,8 @@ function genericUpdateHumanReadableMessage(
   nhlTeams: FantasyHockeyTypes.ProTeam[],
   action: string,
   teamId?: number | string,
-  fromName?: string
+  fromName?: string,
+  toTeamId?: number | string
 ): void {
   let targetPlayer =
     message.targetId && typeof message.targetId == "number"
@@ -412,12 +477,22 @@ function genericUpdateHumanReadableMessage(
     targetPlayerNhlTeam = getNhlTeam(nhlTeams, targetPlayer.proTeamId);
     updatePlayerPosition(targetPlayer);
   }
-  let toTeam: FantasyHockeyTypes.FhLeagueTeam | undefined;
+  let fhTeam: FantasyHockeyTypes.FhLeagueTeam | undefined;
   if (teamId && typeof teamId == "number" && teamId !== -1) {
-    toTeam = getFantasyTeam(fantasyLeagueTeams, teamId);
+    fhTeam = getFantasyTeam(fantasyLeagueTeams, teamId);
   }
-  if (toTeam && targetPlayer && targetPlayerNhlTeam) {
-    message.humanReadableMessage = `${toTeam.abbrev} ${action} ${
+  let fhToTeam: FantasyHockeyTypes.FhLeagueTeam | undefined;
+  if (toTeamId && typeof toTeamId == "number" && toTeamId !== -1) {
+    fhToTeam = getFantasyTeam(fantasyLeagueTeams, toTeamId);
+  }
+  if (fhTeam && fhToTeam && targetPlayer && targetPlayerNhlTeam) {
+    message.humanReadableMessage = `${fhTeam.abbrev} ${action} ${
+      targetPlayer.fullName
+    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.eligiblePositions
+      ?.map((position) => position.abbrev)
+      .join("/")} to ${fhToTeam.abbrev}`;
+  } else if (fhTeam && targetPlayer && targetPlayerNhlTeam) {
+    message.humanReadableMessage = `${fhTeam.abbrev} ${action} ${
       targetPlayer.fullName
     }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.eligiblePositions
       ?.map((position) => position.abbrev)
