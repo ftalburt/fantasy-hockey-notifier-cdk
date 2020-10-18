@@ -1,42 +1,42 @@
 require("source-map-support").install();
 import AWS from "aws-sdk";
-import request from "superagent";
 import { promises as fsp } from "fs";
 import * as FantasyHockeyTypes from "./types";
+import * as dataAccessMethods from "./data-access-methods";
 
 const dynamodb = new AWS.DynamoDB();
 const sns = new AWS.SNS();
-
-if (
-  !(
-    process.env.FH_SEASON &&
-    process.env.FH_LEAGUE_ID &&
-    process.env.ESPN_S2_COOKIE
-  )
-) {
-  throw new Error(
-    "At least one of FH_SEASON, FH_LEAGUE_ID, and ESPN_S2_COOKIE not defined"
-  );
-}
-
-const FH_LEAGUE_ID = process.env.FH_LEAGUE_ID;
-const FH_SEASON = parseInt(process.env.FH_SEASON);
-const ESPN_S2_COOKIE = process.env.ESPN_S2_COOKIE;
-const AWS_SNS_TOPIC_ARN = process.env.AWS_SNS_TOPIC_ARN;
-const AWS_DYNAMO_DB_TABLE_NAME = process.env.AWS_DYNAMO_DB_TABLE_NAME;
-const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
-const LAST_RUN_FILE_PATH = process.env.LAST_RUN_FILE_PATH || ".lastrun";
-const EARLIEST_DATE = process.env.EARLIEST_DATE;
-const LATEST_DATE = process.env.LATEST_DATE;
 
 /**
  * Main method for generating and sending messages about new transactions
  */
 export async function main(): Promise<void> {
+  if (
+    !(
+      process.env.FH_SEASON &&
+      process.env.FH_LEAGUE_ID &&
+      process.env.ESPN_S2_COOKIE
+    )
+  ) {
+    throw new Error(
+      "At least one of FH_SEASON, FH_LEAGUE_ID, and ESPN_S2_COOKIE not defined"
+    );
+  }
+
+  const FH_LEAGUE_ID = process.env.FH_LEAGUE_ID;
+  const FH_SEASON = parseInt(process.env.FH_SEASON);
+  const ESPN_S2_COOKIE = process.env.ESPN_S2_COOKIE;
+  const AWS_SNS_TOPIC_ARN = process.env.AWS_SNS_TOPIC_ARN;
+  const AWS_DYNAMO_DB_TABLE_NAME = process.env.AWS_DYNAMO_DB_TABLE_NAME;
+  const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
+  const LAST_RUN_FILE_PATH = process.env.LAST_RUN_FILE_PATH || ".lastrun";
+  const EARLIEST_DATE = process.env.EARLIEST_DATE;
+  const LATEST_DATE = process.env.LATEST_DATE;
+
   let runtime = new Date().getTime();
   let earliestDate = EARLIEST_DATE
     ? parseInt(EARLIEST_DATE)
-    : await getLastRuntime();
+    : await getLastRuntime(LAST_RUN_FILE_PATH, AWS_DYNAMO_DB_TABLE_NAME);
   // Decrementing value of latestDate to make earliestDate inclusive, but latestDate exclusive
   let latestDate = (LATEST_DATE ? parseInt(LATEST_DATE) : runtime) - 1;
 
@@ -45,7 +45,7 @@ export async function main(): Promise<void> {
     console.log(`Latest date: ${latestDate} (${new Date(latestDate)})`);
     let [messages, leagueData, players, nhlTeamData] = await Promise.all([
       // Sorted list of adds and drops
-      getMessages({
+      dataAccessMethods.getMessages(FH_SEASON, FH_LEAGUE_ID, ESPN_S2_COOKIE, {
         topics: {
           filterIncludeMessageTypeIds: { value: [178, 179, 180, 181, 239] },
           sortMessageDate: {
@@ -62,9 +62,11 @@ export async function main(): Promise<void> {
           },
         },
       }),
-      getLeagueData(),
-      getPlayers({ filterActive: { value: true } }),
-      getNhlTeamData(),
+      dataAccessMethods.getLeagueData(FH_SEASON, FH_LEAGUE_ID, ESPN_S2_COOKIE),
+      dataAccessMethods.getPlayers(FH_SEASON, {
+        filterActive: { value: true },
+      }),
+      dataAccessMethods.getNhlTeamData(FH_SEASON, ESPN_S2_COOKIE),
     ]);
 
     let formattedMessages = getFormattedMessage(
@@ -74,14 +76,18 @@ export async function main(): Promise<void> {
       nhlTeamData
     );
 
-    await sendNotification(formattedMessages);
+    await sendNotification(
+      formattedMessages,
+      AWS_SNS_TOPIC_ARN,
+      DISCORD_WEBHOOK
+    );
   } else {
     console.log(
       "WARNING: no environment variable passed for EARLIEST_DATE and no value found for lastRuntime; no notifications will be sent"
     );
   }
 
-  await updateEpochTime(runtime);
+  await updateEpochTime(runtime, LAST_RUN_FILE_PATH, AWS_DYNAMO_DB_TABLE_NAME);
 }
 
 /**
@@ -115,82 +121,23 @@ function getFormattedMessage(
 }
 
 /**
- * Gets a list of communication messages in the configured league/season
- * @param filter A filter to apply when pulling the list of messages
- */
-async function getMessages(
-  filter?: FantasyHockeyTypes.MessageFilter
-): Promise<FantasyHockeyTypes.MessageTopic[]> {
-  let messageRequest = request
-    .get(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${FH_SEASON}/segments/0/leagues/${FH_LEAGUE_ID}/communication/?view=kona_league_communication`
-    )
-    .set("Cookie", `espn_s2=${ESPN_S2_COOKIE}`);
-  if (filter) {
-    messageRequest.set("x-fantasy-filter", JSON.stringify(filter));
-  }
-  let requestResult: FantasyHockeyTypes.CommunicationResponse = (
-    await messageRequest
-  ).body;
-
-  console.log(`Messages API response: ${JSON.stringify(requestResult)}`);
-
-  return requestResult.topics;
-}
-
-/**
- * Gets a list of active players in the configured season
- * @param filter A filter to apply when pulling the list of players
- */
-async function getPlayers(
-  filter: FantasyHockeyTypes.PlayerFilter
-): Promise<FantasyHockeyTypes.NhlPlayer[]> {
-  return (
-    await request
-      .get(
-        `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${FH_SEASON}/players?scoringPeriodId=0&view=players_wl`
-      )
-      .set("x-fantasy-filter", JSON.stringify(filter))
-  ).body;
-}
-
-/** Gets Info on the fantasy hockey league */
-async function getLeagueData(): Promise<FantasyHockeyTypes.FhLeagueData> {
-  let messageRequest = request
-    .get(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${FH_SEASON}/segments/0/leagues/${FH_LEAGUE_ID}`
-    )
-    .set("Cookie", `espn_s2=${ESPN_S2_COOKIE}`);
-
-  return (await messageRequest).body;
-}
-
-/** Gets info on the all NHL teams */
-async function getNhlTeamData(): Promise<
-  FantasyHockeyTypes.FantasyHockeyInfoResponse
-> {
-  let messageRequest = request
-    .get(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${FH_SEASON}?view=proTeamSchedules_wl`
-    )
-    .set("Cookie", `espn_s2=${ESPN_S2_COOKIE}`);
-
-  return (await messageRequest).body;
-}
-
-/**
  * Gets the unix timestamp of the last successful run from DynamoDB or a local file
+ * @param lastRunFilePath The path to a local file that contains the unix time that this script was last run
+ * @param awsDynamoDbTable The name of the DynamoDB to use for storing last run date
  */
-async function getLastRuntime(): Promise<number | undefined> {
+async function getLastRuntime(
+  lastRunFilePath: string,
+  awsDynamoDbTable?: string
+): Promise<number | undefined> {
   let lastRun: number | undefined;
-  if (AWS_DYNAMO_DB_TABLE_NAME) {
+  if (awsDynamoDbTable) {
     let dynamoSearchParams = {
       Key: {
         keyName: {
           S: "lastRun",
         },
       },
-      TableName: AWS_DYNAMO_DB_TABLE_NAME,
+      TableName: awsDynamoDbTable,
     };
 
     let lastRunString = (await dynamodb.getItem(dynamoSearchParams).promise())
@@ -198,7 +145,7 @@ async function getLastRuntime(): Promise<number | undefined> {
     lastRun = lastRunString ? parseInt(lastRunString) : undefined;
   } else {
     try {
-      let lastRunString = await fsp.readFile(LAST_RUN_FILE_PATH, "utf8");
+      let lastRunString = await fsp.readFile(lastRunFilePath, "utf8");
       lastRun = parseInt(lastRunString);
     } catch {
       lastRun = undefined;
@@ -211,9 +158,15 @@ async function getLastRuntime(): Promise<number | undefined> {
 /**
  * Updates DynamoDB or a local file with a new value for the latest successful function execution
  * @param newTime The new unix time to store
+ * @param lastRunFilePath The path to a local file to use for storage of the unix time that this script was last run
+ * @param awsDynamoDbTable The name of the DynamoDB to use for storing last run date
  */
-async function updateEpochTime(newTime: number): Promise<void> {
-  if (AWS_DYNAMO_DB_TABLE_NAME) {
+async function updateEpochTime(
+  newTime: number,
+  lastRunFilePath: string,
+  awsDynamoDbTable?: string
+): Promise<void> {
+  if (awsDynamoDbTable) {
     await dynamodb
       .updateItem({
         Key: {
@@ -226,12 +179,12 @@ async function updateEpochTime(newTime: number): Promise<void> {
           ":t": { N: newTime.toString() },
         },
         ReturnValues: "UPDATED_NEW",
-        TableName: AWS_DYNAMO_DB_TABLE_NAME,
+        TableName: awsDynamoDbTable,
         UpdateExpression: "SET #IV = :t",
       })
       .promise();
   } else {
-    await fsp.writeFile(LAST_RUN_FILE_PATH, newTime.toString(), "utf8");
+    await fsp.writeFile(lastRunFilePath, newTime.toString(), "utf8");
   }
 }
 
@@ -475,19 +428,27 @@ function genericUpdateHumanReadableMessage(
 /**
  * Sends the notification; currently, the message is sent to SNS and Discord if `SNS_TOPIC_ARN` and `DISCORD_WEBHOOK` are set
  * @param message The message to send
+ * @param awsSnsTopicArn The ARN of an AWS SNS topic that the message should be sent to
+ * @param discordWebhook The Discord Webhook URL that the message should be posted to
  */
-async function sendNotification(message: string): Promise<void> {
+async function sendNotification(
+  message: string,
+  awsSnsTopicArn?: string,
+  discordWebhook?: string
+): Promise<void> {
   if (message) {
     console.log(`Message to be sent via notification streams:\n${message}`);
     let notificationPromises: Promise<any>[] = [];
-    if (AWS_SNS_TOPIC_ARN) {
+    if (awsSnsTopicArn) {
       notificationPromises.push(
-        sns.publish({ TopicArn: AWS_SNS_TOPIC_ARN, Message: message }).promise()
+        sns.publish({ TopicArn: awsSnsTopicArn, Message: message }).promise()
       );
     }
-    if (DISCORD_WEBHOOK) {
+    if (discordWebhook) {
       notificationPromises.push(
-        request.post(DISCORD_WEBHOOK).send({ content: message })
+        dataAccessMethods.httpPostRequest(discordWebhook, undefined, {
+          content: message,
+        })
       );
     }
 
