@@ -13,6 +13,8 @@ export interface NhlPlayer {
   eligibleSlots: number[];
   /** Human-readable info about positions this player is eligible for */
   eligiblePositions?: PlayerPosition[];
+  /** Human-readable info about non-primary positions this player is eligible for */
+  nonPrimaryEligiblePositions?: PlayerPosition[];
   /** The player's first name */
   firstName: string;
   /** The player's full name */

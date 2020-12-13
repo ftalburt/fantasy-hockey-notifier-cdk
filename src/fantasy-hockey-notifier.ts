@@ -118,7 +118,9 @@ function getFormattedMessage(
         leagueData.teams,
         nhlTeamData.settings.proTeams
       );
-      formattedMessages += `${topicHeader ? "    ": ""}${message.humanReadableMessage}\n`;
+      formattedMessages += `${topicHeader ? "    " : ""}${
+        message.humanReadableMessage
+      }\n`;
     });
     formattedMessages.trim();
     formattedMessages += "\n";
@@ -298,6 +300,9 @@ function updatePlayerPosition(player: FantasyHockeyTypes.NhlPlayer): void {
           slot.abbrev == "SK"
         )
     );
+  player.nonPrimaryEligiblePositions = player.eligiblePositions.filter(
+    (position) => position.abbrev != player.defaultPosition?.abbrev
+  );
 }
 
 /**
@@ -488,15 +493,27 @@ function genericUpdateHumanReadableMessage(
   if (fhTeam && fhToTeam && targetPlayer && targetPlayerNhlTeam) {
     message.humanReadableMessage = `${fhTeam.abbrev} ${action} ${
       targetPlayer.fullName
-    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.eligiblePositions
-      ?.map((position) => position.abbrev)
-      .join("/")} to ${fhToTeam.abbrev}`;
+    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.defaultPosition?.abbrev}${
+      targetPlayer.nonPrimaryEligiblePositions &&
+      targetPlayer.nonPrimaryEligiblePositions.length > 0
+        ? "/" +
+          targetPlayer.nonPrimaryEligiblePositions
+            ?.map((position) => position.abbrev)
+            .join("/")
+        : ""
+    } to ${fhToTeam.abbrev}`;
   } else if (fhTeam && targetPlayer && targetPlayerNhlTeam) {
     message.humanReadableMessage = `${fhTeam.abbrev} ${action} ${
       targetPlayer.fullName
-    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.eligiblePositions
-      ?.map((position) => position.abbrev)
-      .join("/")}${fromName ? ` from ${fromName}` : ""}`;
+    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.defaultPosition?.abbrev}${
+      targetPlayer.nonPrimaryEligiblePositions &&
+      targetPlayer.nonPrimaryEligiblePositions.length > 0
+        ? "/" +
+          targetPlayer.nonPrimaryEligiblePositions
+            ?.map((position) => position.abbrev)
+            .join("/")
+        : ""
+    }${fromName ? ` from ${fromName}` : ""}`;
   }
 }
 
