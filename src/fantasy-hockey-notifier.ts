@@ -492,8 +492,10 @@ function genericUpdateHumanReadableMessage(
   }
   if (fhTeam && fhToTeam && targetPlayer && targetPlayerNhlTeam) {
     message.humanReadableMessage = `${fhTeam.abbrev} ${action} ${
-      targetPlayer.fullName
-    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.defaultPosition?.abbrev}${
+      targetPlayer.firstName
+    } ${targetPlayer.lastName}, ${targetPlayerNhlTeam.abbrev} ${
+      targetPlayer.defaultPosition?.abbrev
+    }${
       targetPlayer.nonPrimaryEligiblePositions &&
       targetPlayer.nonPrimaryEligiblePositions.length > 0
         ? "/" +
@@ -504,8 +506,10 @@ function genericUpdateHumanReadableMessage(
     } to ${fhToTeam.abbrev}`;
   } else if (fhTeam && targetPlayer && targetPlayerNhlTeam) {
     message.humanReadableMessage = `${fhTeam.abbrev} ${action} ${
-      targetPlayer.fullName
-    }, ${targetPlayerNhlTeam.abbrev} ${targetPlayer.defaultPosition?.abbrev}${
+      targetPlayer.firstName
+    } ${targetPlayer.lastName}, ${targetPlayerNhlTeam.abbrev} ${
+      targetPlayer.defaultPosition?.abbrev
+    }${
       targetPlayer.nonPrimaryEligiblePositions &&
       targetPlayer.nonPrimaryEligiblePositions.length > 0
         ? "/" +
