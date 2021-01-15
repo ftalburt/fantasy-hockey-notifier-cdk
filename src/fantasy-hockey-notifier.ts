@@ -125,7 +125,7 @@ function getFormattedMessage(
     formattedMessages.trim();
     formattedMessages += "\n";
   });
-  return formattedMessages.trim();
+  return formattedMessages;
 }
 
 export function getTopicHeader(topic: FantasyHockeyTypes.MessageTopic): string {
