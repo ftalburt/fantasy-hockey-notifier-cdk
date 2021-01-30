@@ -1,6 +1,6 @@
 {
   "name": "fantasy-hockey-notifier",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Send notifications for transactions in an ESPN Fantasy Hockey league; designed to be used with AWS Lambda",
   "scripts": {
     "start": "npm run build && node -r dotenv/config .build/src/main.js",
@@ -22,7 +22,8 @@
   },
   "homepage": "https://github.com/ftalburt/fantasy-hockey-notifier#readme",
   "dependencies": {
-    "aws-sdk": "^2.725.0",
+    "@aws-sdk/client-dynamodb": "^3.4.1",
+    "@aws-sdk/client-sns": "^3.4.1",
     "dotenv": "^8.2.0",
     "source-map-support": "^0.5.19",
     "superagent": "^6.0.0"

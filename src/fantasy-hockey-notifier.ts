@@ -1,11 +1,16 @@
 require("source-map-support").install();
-import AWS from "aws-sdk";
+import {
+  DynamoDBClient,
+  UpdateItemCommand,
+  GetItemCommand,
+} from "@aws-sdk/client-dynamodb";
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { promises as fsp } from "fs";
 import * as FantasyHockeyTypes from "./types";
 import * as dataAccessMethods from "./data-access-methods";
 
-const dynamodb = new AWS.DynamoDB();
-const sns = new AWS.SNS();
+const dynamodbClient = new DynamoDBClient({});
+const snsClient = new SNSClient({});
 
 /**
  * Main method for generating and sending messages about new transactions
@@ -158,8 +163,9 @@ async function getLastRuntime(
       TableName: awsDynamoDbTable,
     };
 
-    let lastRunString = (await dynamodb.getItem(dynamoSearchParams).promise())
-      .Item?.itemValue.N;
+    let lastRunString = (
+      await dynamodbClient.send(new GetItemCommand(dynamoSearchParams))
+    ).Item?.itemValue.N;
     lastRun = lastRunString ? parseInt(lastRunString) : undefined;
   } else {
     try {
@@ -185,8 +191,8 @@ async function updateEpochTime(
   awsDynamoDbTable?: string
 ): Promise<void> {
   if (awsDynamoDbTable) {
-    await dynamodb
-      .updateItem({
+    await dynamodbClient.send(
+      new UpdateItemCommand({
         Key: {
           keyName: {
             S: "lastRun",
@@ -200,7 +206,7 @@ async function updateEpochTime(
         TableName: awsDynamoDbTable,
         UpdateExpression: "SET #IV = :t",
       })
-      .promise();
+    );
   } else {
     await fsp.writeFile(lastRunFilePath, newTime.toString(), "utf8");
   }
@@ -537,7 +543,7 @@ async function sendNotification(
     let notificationPromises: Promise<any>[] = [];
     if (awsSnsTopicArn) {
       notificationPromises.push(
-        sns.publish({ TopicArn: awsSnsTopicArn, Message: message }).promise()
+        snsClient.send(new PublishCommand({ TopicArn: awsSnsTopicArn, Message: message }))
       );
     }
     if (discordWebhook) {
