@@ -123,6 +123,23 @@ function getFormattedMessage(
         leagueData.teams,
         nhlTeamData.settings.proTeams
       );
+    });
+    topic.messages.sort((a, b) => {
+      if (!a.humanReadableMessage) {
+        return -1;
+      }
+      if (!b.humanReadableMessage) {
+        return 1;
+      }
+      if (a.humanReadableMessage < b.humanReadableMessage) {
+        return -1;
+      }
+      if (a.humanReadableMessage > b.humanReadableMessage) {
+        return 1;
+      }
+      return 0;
+    });
+    topic.messages.forEach((message) => {
       formattedMessages += `${topicHeader ? "    " : ""}${
         message.humanReadableMessage
       }\n`;
@@ -543,7 +560,9 @@ async function sendNotification(
     let notificationPromises: Promise<any>[] = [];
     if (awsSnsTopicArn) {
       notificationPromises.push(
-        snsClient.send(new PublishCommand({ TopicArn: awsSnsTopicArn, Message: message }))
+        snsClient.send(
+          new PublishCommand({ TopicArn: awsSnsTopicArn, Message: message })
+        )
       );
     }
     if (discordWebhook) {
