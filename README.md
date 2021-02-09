@@ -1,8 +1,8 @@
 # Fantasy Hockey Notifier
 
-> Send notifications for adds/drops in an ESPN Fantasy Hockey league; designed to be used with AWS Lambda
+> Send notifications for adds, drops, and trades in an ESPN Fantasy Hockey league; designed to be used with AWS Lambda
 
-This application checks for and sends notifications about adds/drops in an ESPN Fantasy Hockey league. All ESPN APIs used are unofficial and undocumented, thus this application may break at some point in the future if ESPN changes the response schema for any of the endpoints. The codebase supports local execution, along with deployment to AWS using [Serverless Framework](https://www.serverless.com/).
+This application checks for and sends notifications about adds, drops, and trades in an ESPN Fantasy Hockey league. All ESPN APIs used are unofficial and undocumented, thus this application may break at some point in the future if ESPN changes the response schema for any of the endpoints. The codebase supports local execution, along with deployment to AWS using [Serverless Framework](https://www.serverless.com/).
 
 ## Local Execution
 
