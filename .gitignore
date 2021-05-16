@@ -10,3 +10,5 @@ node_modules/
 .serverless
 # VS Code settings
 .vscode/
+# Local act secrets files
+*.secrets

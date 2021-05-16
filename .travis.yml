@@ -1,5 +1,0 @@
-os: linux
-dist: focal
-language: node_js
-install: npm ci
-script: ./travis-deploy.sh
