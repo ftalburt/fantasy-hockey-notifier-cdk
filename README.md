@@ -8,7 +8,7 @@ This application checks for and sends notifications about adds, drops, and trade
 
 ### Prerequisites for Local Execution
 
-* Node.js 12 or later
+* Node.js 14 or later
 * See the [Environment Variables](#environment-variables) section for a list of required and optional variables that should be exported in the shell or set in the .env file
 * If using any of the environment variables starting with `AWS_`, you must configure AWS credentials via a local credentials file or environment variables. See the [AWS documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for details.
 
