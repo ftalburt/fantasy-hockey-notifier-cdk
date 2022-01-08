@@ -29,7 +29,7 @@
     "superagent": "^6.0.0"
   },
   "devDependencies": {
-    "@tsconfig/node12": "^1.0.9",
+    "@tsconfig/node14": "^1.0.1",
     "@types/node": "^17.0.0",
     "@types/request-promise-native": "^1.0.18",
     "@types/superagent": "^4.1.14",
