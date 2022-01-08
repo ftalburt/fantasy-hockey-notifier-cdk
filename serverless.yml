@@ -1,22 +1,26 @@
 service: fantasy-hockey-notifier
+variablesResolutionMode: 20210326
 
 provider:
   name: aws
+  eventBridge:
+    useCloudFormation: false
   runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
   environment:
-    FH_LEAGUE_ID: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/FH_LEAGUE_ID~true}
+    FH_LEAGUE_ID: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/FH_LEAGUE_ID}
     FH_SEASON: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/FH_SEASON}
-    ESPN_S2_COOKIE: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/ESPN_S2_COOKIE~true}
-    DISCORD_WEBHOOK: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/DISCORD_WEBHOOK~true}
+    ESPN_S2_COOKIE: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/ESPN_S2_COOKIE}
+    DISCORD_WEBHOOK: ${ssm:/fantasy-hockey-notifier/${self:provider.stage}/DISCORD_WEBHOOK,null}
     AWS_DYNAMO_DB_TABLE_NAME: fantasy-hockey-notifier-${self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
         - dynamodb:GetItem
         - dynamodb:UpdateItem
-      Resource: 'arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/fantasy-hockey-notifier-${self:provider.stage}'
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/fantasy-hockey-notifier-${self:provider.stage}'
 
 functions:
   fantasy-hockey-notifier:
@@ -46,4 +50,3 @@ resources:
 
 plugins:
   - serverless-plugin-typescript
-  - serverless-pseudo-parameters
