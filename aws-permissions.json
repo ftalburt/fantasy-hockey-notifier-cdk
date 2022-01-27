@@ -19,7 +19,10 @@
                 "cloudformation:CreateUploadBucket",
                 "cloudformation:DeleteStack",
                 "cloudformation:Describe*",
-                "cloudformation:UpdateStack"
+                "cloudformation:UpdateStack",
+                "cloudformation:DeleteChangeSet",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:ExecuteChangeSet"
             ],
             "Resource": [
                 "arn:aws:cloudformation:us-east-1:*:stack/fantasy-hockey-notifier-*/*"
