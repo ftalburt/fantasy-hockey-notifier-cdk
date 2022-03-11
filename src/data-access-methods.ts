@@ -1,4 +1,4 @@
-import request from "superagent";
+import * as request from "superagent";
 import * as FantasyHockeyTypes from "./types";
 
 /**
@@ -20,7 +20,7 @@ export async function getMessages(
     )
     .set("Cookie", `espn_s2=${espnAuthCookie}`);
   if (filter) {
-    messageRequest.set("x-fantasy-filter", JSON.stringify(filter));
+    await messageRequest.set("x-fantasy-filter", JSON.stringify(filter));
   }
   let requestResult: FantasyHockeyTypes.CommunicationResponse = (
     await messageRequest
@@ -96,10 +96,10 @@ export async function httpGetRequest(
   const httpRequest = request.get(url);
   if (headers) {
     for (const header of Object.keys(headers)) {
-      httpRequest.set(header, headers[header]);
+      await httpRequest.set(header, headers[header]);
     }
   }
-  return await httpRequest;
+  return httpRequest;
 }
 
 /**
@@ -116,9 +116,9 @@ export async function httpPostRequest(
   const httpRequest = request.post(url);
   if (headers) {
     for (const header of Object.keys(headers)) {
-      httpRequest.set(header, headers[header]);
+      await httpRequest.set(header, headers[header]);
     }
   }
-  httpRequest.send(data);
-  return await httpRequest;
+  await httpRequest.send(data);
+  return httpRequest;
 }

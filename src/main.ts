@@ -1,4 +1,5 @@
-require("source-map-support").install();
-import { main } from "./fantasy-hockey-notifier";
+import "dotenv/config";
+import "source-map-support/register";
+import { main } from "./fantasy-hockey-notifier.api";
 
 main().catch(console.error);

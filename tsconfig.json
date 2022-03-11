@@ -1,9 +1,0 @@
-{
-  "extends": "@tsconfig/node14",
-  "compilerOptions": {
-    "outDir": ".build",
-    "rootDir": ".",
-    "sourceMap": true
-  },
-  "include": ["src/**/*"]
-}
