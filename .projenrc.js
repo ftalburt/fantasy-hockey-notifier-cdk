@@ -43,7 +43,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   deps: ["cdk-iam-floyd"],
   packageManager: NodePackageManager.NPM,
   description:
-    "Send notifications for transactions in an ESPN Fantasy Hockey league; designed to be used with AWS Lambda",
+    "AWS CDK construct to send notifications for adds, drops, and trades in an ESPN Fantasy Hockey league",
 });
 project.setScript("start", "ts-node --project tsconfig.dev.json src/main.ts");
 project.files.push(new TextFile(project, ".nvmrc", { lines: ["14", ""] }));

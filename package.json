@@ -1,6 +1,6 @@
 {
   "name": "fantasy-hockey-notifier-cdk",
-  "description": "Send notifications for transactions in an ESPN Fantasy Hockey league; designed to be used with AWS Lambda",
+  "description": "AWS CDK construct to send notifications for adds, drops, and trades in an ESPN Fantasy Hockey league",
   "repository": {
     "type": "git",
     "url": "https://github.com/ftalburt/fantasy-hockey-notifier-cdk.git"
