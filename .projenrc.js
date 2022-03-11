@@ -44,6 +44,14 @@ const project = new awscdk.AwsCdkConstructLibrary({
   packageManager: NodePackageManager.NPM,
   description:
     "AWS CDK construct to send notifications for adds, drops, and trades in an ESPN Fantasy Hockey league",
+  publishToPypi: {
+    distName: "fantasy-hockey-notifier-cdk",
+    module: "fantasy_hockey_notifier_cdk",
+  },
+  publishToNuget: {
+    dotNetNamespace: "Ftalburt.CDK",
+    packageId: "Ftalburt.CDK.FantasyHockeyNotifierCdk",
+  },
 });
 project.setScript("start", "ts-node --project tsconfig.dev.json src/main.ts");
 project.files.push(new TextFile(project, ".nvmrc", { lines: ["14", ""] }));

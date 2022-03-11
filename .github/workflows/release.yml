@@ -125,3 +125,94 @@ jobs:
           body: See https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release_pypi:
+    name: Publish to PyPI
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    if: needs.release.outputs.latest_commit == github.sha
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+          path: dist
+      - name: Prepare Repository
+        run: mv dist .repo
+      - name: Install Dependencies
+        run: cd .repo && npm ci
+      - name: Create python artifact
+        run: cd .repo && npx projen package:python
+      - name: Collect python Artifact
+        run: mv .repo/dist dist
+      - name: Release
+        run: npx -p publib@latest publib-pypi
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+      - name: Extract Version
+        if: ${{ failure() }}
+        id: extract-version
+        run: echo "::set-output name=VERSION::$(cat dist/version.txt)"
+      - name: Create Issue
+        if: ${{ failure() }}
+        uses: imjohnbo/issue-bot@v3
+        with:
+          labels: failed-release
+          title: Publishing v${{ steps.extract-version.outputs.VERSION }} to PyPI failed
+          body: See https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release_nuget:
+    name: Publish to NuGet Gallery
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    if: needs.release.outputs.latest_commit == github.sha
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.x
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+          path: dist
+      - name: Prepare Repository
+        run: mv dist .repo
+      - name: Install Dependencies
+        run: cd .repo && npm ci
+      - name: Create dotnet artifact
+        run: cd .repo && npx projen package:dotnet
+      - name: Collect dotnet Artifact
+        run: mv .repo/dist dist
+      - name: Release
+        run: npx -p publib@latest publib-nuget
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      - name: Extract Version
+        if: ${{ failure() }}
+        id: extract-version
+        run: echo "::set-output name=VERSION::$(cat dist/version.txt)"
+      - name: Create Issue
+        if: ${{ failure() }}
+        uses: imjohnbo/issue-bot@v3
+        with:
+          labels: failed-release
+          title: Publishing v${{ steps.extract-version.outputs.VERSION }} to NuGet Gallery failed
+          body: See https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
