@@ -8,6 +8,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
   cdkVersion: "2.1.0",
   defaultReleaseBranch: "main",
   name: projectName,
+  githubOptions: {
+    pullRequestLintOptions: {
+      semanticTitleOptions: { types: ["feat", "fix", "chore", "ci"] },
+    },
+  },
   keywords: ["lambda", "aws-lambda", "espn", "nhl", "fantasy-hockey", "cdk"],
   codeCov: true,
   releaseFailureIssue: true,
