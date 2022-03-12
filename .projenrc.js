@@ -8,6 +8,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   cdkVersion: "2.1.0",
   defaultReleaseBranch: "main",
   name: projectName,
+  majorVersion: 1,
   githubOptions: {
     pullRequestLintOptions: {
       semanticTitleOptions: { types: ["feat", "fix", "chore", "ci", "docs"] },
