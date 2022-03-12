@@ -1,6 +1,10 @@
-# Fantasy Hockey Notifier
+# Fantasy Hockey Notifier CDK
 
 > AWS CDK construct to send notifications for adds, drops, and trades in an ESPN Fantasy Hockey league
+
+[![NPM version](https://badge.fury.io/js/fantasy-hockey-notifier-cdk.svg)](https://badge.fury.io/js/fantasy-hockey-notifier-cdk)
+[![PyPI version](https://badge.fury.io/py/fantasy-hockey-notifier-cdk.svg)](https://badge.fury.io/py/fantasy-hockey-notifier-cdk)
+[![Release](https://github.com/ftalburt/fantasy-hockey-notifier-cdk/actions/workflows/release.yml/badge.svg)](https://github.com/cdklabs/cdk-ecr-deployment/actions/workflows/release.yml)
 
 This application checks for and sends notifications about adds, drops, and trades in an ESPN Fantasy Hockey league. All ESPN APIs used are unofficial and undocumented, thus this application may break at some point in the future if ESPN changes the response schema for any of the endpoints. The codebase supports local execution, along with deployment to AWS using [AWS CDK](https://aws.amazon.com/cdk).
 
