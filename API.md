@@ -234,7 +234,8 @@ public readonly espnS2Cookie: string;
 
 Value for ESPN_S2_COOKIE.
 
-This is a required parameter and must be set via SSM or clear text env vars
+This is a required parameter and must be set via SSM or
+clear text env vars
 
 ---
 
@@ -248,7 +249,8 @@ public readonly fhLeagueId: string;
 
 Value for FH_LEAGUE_ID.
 
-This is a required parameter and must be set via SSM or clear text env vars
+This is a required parameter and must be set via SSM or
+clear text env vars
 
 ---
 
@@ -262,7 +264,8 @@ public readonly fhSeason: string;
 
 Value for FH_SEASON.
 
-This is a required parameter and must be set via SSM or clear text env vars
+This is a required parameter and must be set via SSM or
+clear text env vars
 
 ---
 
