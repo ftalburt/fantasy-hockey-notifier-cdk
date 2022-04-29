@@ -55,26 +55,26 @@
     "jest-junit": "^13",
     "jsii": "^1.57.0",
     "jsii-diff": "^1.57.0",
-    "jsii-docgen": "^6.3.22",
+    "jsii-docgen": "^6.3.23",
     "jsii-pacmak": "^1.57.0",
     "json-schema": "^0.4.0",
     "npm-check-updates": "^12",
     "prettier": "^2.6.2",
-    "projen": "^0.54.50",
+    "projen": "^0.54.51",
     "standard-version": "^9",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.4"
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.1.0",
     "constructs": "^10.0.5"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.79.0",
-    "@aws-sdk/client-sns": "^3.79.0",
-    "@aws-sdk/client-ssm": "^3.79.0",
-    "cdk-iam-floyd": "^0.361.0",
+    "@aws-sdk/client-dynamodb": "^3.80.0",
+    "@aws-sdk/client-sns": "^3.80.0",
+    "@aws-sdk/client-ssm": "^3.80.0",
+    "cdk-iam-floyd": "^0.362.0",
     "dotenv": "^16.0.0",
     "source-map-support": "^0.5.21",
     "superagent": "^7.1.3"
