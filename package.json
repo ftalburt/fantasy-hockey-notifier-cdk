@@ -60,7 +60,7 @@
     "json-schema": "^0.4.0",
     "npm-check-updates": "^12",
     "prettier": "^2.6.2",
-    "projen": "^0.56.29",
+    "projen": "^0.56.32",
     "standard-version": "^9",
     "ts-jest": "^27",
     "ts-node": "^10.8.0",
@@ -71,9 +71,9 @@
     "constructs": "^10.0.5"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.95.0",
-    "@aws-sdk/client-sns": "^3.95.0",
-    "@aws-sdk/client-ssm": "^3.95.0",
+    "@aws-sdk/client-dynamodb": "^3.99.0",
+    "@aws-sdk/client-sns": "^3.99.0",
+    "@aws-sdk/client-ssm": "^3.99.0",
     "cdk-iam-floyd": "^0.373.0",
     "dotenv": "^16.0.1",
     "source-map-support": "^0.5.21",
