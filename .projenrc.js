@@ -5,7 +5,7 @@ const repositoryUrl = `https://github.com/ftalburt/${projectName}.git`;
 
 const project = new awscdk.AwsCdkConstructLibrary({
   author: "Forrest Talburt",
-  cdkVersion: "2.1.0",
+  cdkVersion: "2.30.0",
   defaultReleaseBranch: "main",
   name: projectName,
   majorVersion: 1,
