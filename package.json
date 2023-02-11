@@ -58,7 +58,7 @@
     "jsii-pacmak": "^1.74.0",
     "npm-check-updates": "^16",
     "prettier": "^2.8.4",
-    "projen": "^0.67.45",
+    "projen": "^0.67.48",
     "standard-version": "^9",
     "ts-jest": "^27",
     "ts-node": "^10.9.1",
@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.267.0",
-    "@aws-sdk/client-sns": "^3.267.0",
+    "@aws-sdk/client-sns": "^3.269.0",
     "@aws-sdk/client-ssm": "^3.267.0",
     "cdk-iam-floyd": "^0.479.0",
     "dotenv": "^16.0.3",
