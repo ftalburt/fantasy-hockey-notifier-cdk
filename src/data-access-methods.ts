@@ -16,7 +16,7 @@ export async function getMessages(
 ): Promise<FantasyHockeyTypes.MessageTopic[]> {
   let messageRequest = request
     .get(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}/segments/0/leagues/${fantasyLeagueId}/communication/?view=kona_league_communication`
+      `https://lm-api-reads.fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}/segments/0/leagues/${fantasyLeagueId}/communication/?view=kona_league_communication`
     )
     .set("Cookie", `espn_s2=${espnAuthCookie}`);
   if (filter) {
@@ -42,7 +42,7 @@ export async function getPlayers(
 ): Promise<FantasyHockeyTypes.NhlPlayer[]> {
   return (
     await httpGetRequest(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}/players?scoringPeriodId=0&view=players_wl`,
+      `https://lm-api-reads.fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}/players?scoringPeriodId=0&view=players_wl`,
       { "x-fantasy-filter": JSON.stringify(filter) }
     )
   ).body;
@@ -61,7 +61,7 @@ export async function getLeagueData(
 ): Promise<FantasyHockeyTypes.FhLeagueData> {
   return (
     await httpGetRequest(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}/segments/0/leagues/${fantasyLeagueId}`,
+      `https://lm-api-reads.fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}/segments/0/leagues/${fantasyLeagueId}`,
       { Cookie: `espn_s2=${espnAuthCookie}` }
     )
   ).body;
@@ -78,7 +78,7 @@ export async function getNhlTeamData(
 ): Promise<FantasyHockeyTypes.FantasyHockeyInfoResponse> {
   return (
     await httpGetRequest(
-      `https://fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}?view=proTeamSchedules_wl`,
+      `https://lm-api-reads.fantasy.espn.com/apis/v3/games/fhl/seasons/${nhlSeason}?view=proTeamSchedules_wl`,
       { Cookie: `espn_s2=${espnAuthCookie}` }
     )
   ).body;
