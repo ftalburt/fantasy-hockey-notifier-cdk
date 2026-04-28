@@ -6,7 +6,7 @@ import * as kms from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as sns from "aws-cdk-lib/aws-sns";
-import * as statement from "cdk-iam-floyd";
+import { Statement } from "cdk-iam-floyd";
 import { Construct } from "constructs";
 
 /** Environment variables for the Lambda function */
@@ -167,7 +167,7 @@ export class FantasyHockeyNotifier extends Construct {
     this.lambdaArchitecture =
       props.lambdaArchitecture ?? lambda.Architecture.ARM_64;
     this.lambdaFunction = new NodejsFunction(this, "api", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: props.memorySize ?? 128,
       timeout: props.timeout ?? Duration.seconds(10),
       architecture: this.lambdaArchitecture,
@@ -193,7 +193,7 @@ export class FantasyHockeyNotifier extends Construct {
         const value = props.ssmPaths[key as keyof FantasyHockeyEnvVars];
         if (value !== undefined) {
           this.lambdaFunction.addToRolePolicy(
-            new statement.Ssm()
+            new Statement.Ssm()
               .toDescribeParameters()
               .toGetParameters()
               .toGetParameter()

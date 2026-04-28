@@ -29,11 +29,10 @@ test("Test default parameters", () => {
   template.hasResourceProperties("AWS::Lambda::Function", {
     Architectures: ["arm64"],
     Timeout: 10,
-    Runtime: "nodejs14.x",
+    Runtime: "nodejs22.x",
     MemorySize: 128,
     Environment: Match.objectEquals({
       Variables: {
-        AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
         AWS_DYNAMO_DB_TABLE_NAME: { Ref: Match.anyValue() },
         ESPN_S2_COOKIE: cookieValue,
         FH_LEAGUE_ID: leagueId,

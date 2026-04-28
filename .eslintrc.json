@@ -7,8 +7,7 @@
   "root": true,
   "plugins": [
     "@typescript-eslint",
-    "import",
-    "prettier"
+    "import"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -18,7 +17,6 @@
   },
   "extends": [
     "plugin:import/typescript",
-    "prettier",
     "plugin:prettier/recommended"
   ],
   "settings": {
@@ -45,12 +43,12 @@
     "!.projenrc.js"
   ],
   "rules": {
-    "prettier/prettier": [
-      "error"
+    "curly": [
+      "error",
+      "multi-line",
+      "consistent"
     ],
-    "@typescript-eslint/no-require-imports": [
-      "error"
-    ],
+    "@typescript-eslint/no-require-imports": "error",
     "import/no-extraneous-dependencies": [
       "error",
       {
@@ -78,33 +76,18 @@
         }
       }
     ],
-    "no-duplicate-imports": [
+    "import/no-duplicates": [
       "error"
     ],
     "no-shadow": [
       "off"
     ],
-    "@typescript-eslint/no-shadow": [
-      "error"
-    ],
-    "key-spacing": [
-      "error"
-    ],
-    "no-multiple-empty-lines": [
-      "error"
-    ],
-    "@typescript-eslint/no-floating-promises": [
-      "error"
-    ],
+    "@typescript-eslint/no-shadow": "error",
+    "@typescript-eslint/no-floating-promises": "error",
     "no-return-await": [
       "off"
     ],
-    "@typescript-eslint/return-await": [
-      "error"
-    ],
-    "no-trailing-spaces": [
-      "error"
-    ],
+    "@typescript-eslint/return-await": "error",
     "dot-notation": [
       "error"
     ],

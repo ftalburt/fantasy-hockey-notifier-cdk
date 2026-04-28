@@ -6,139 +6,161 @@ on:
     branches:
       - main
   workflow_dispatch: {}
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     outputs:
       latest_commit: ${{ steps.git_remote.outputs.latest_commit }}
+      tag_exists: ${{ steps.check_tag_exists.outputs.exists }}
     env:
       CI: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set git identity
         run: |-
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 14.x
+          node-version: 22.x
+          package-manager-cache: false
       - name: Install dependencies
         run: npm ci
       - name: release
         run: npx projen release
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v6
         with:
           directory: coverage
+          use_oidc: true
+      - name: Check if version has already been tagged
+        id: check_tag_exists
+        run: |-
+          TAG=$(cat dist/releasetag.txt)
+          ([ ! -z "$TAG" ] && git ls-remote -q --exit-code --tags origin $TAG && (echo "exists=true" >> $GITHUB_OUTPUT)) || (echo "exists=false" >> $GITHUB_OUTPUT)
+          cat $GITHUB_OUTPUT
       - name: Check for new commits
         id: git_remote
-        run: echo "latest_commit=$(git ls-remote origin -h ${{ github.ref }} | cut -f1)" >> $GITHUB_OUTPUT
+        run: |-
+          echo "latest_commit=$(git ls-remote origin -h ${{ github.ref }} | cut -f1)" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
+        shell: bash
       - name: Backup artifact permissions
         if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
         run: cd dist && getfacl -R . > permissions-backup.acl
         continue-on-error: true
       - name: Upload artifact
         if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: build-artifact
           path: dist
+          overwrite: true
   release_github:
     name: Publish to GitHub Releases
-    needs: release
+    needs:
+      - release
+      - release_npm
+      - release_pypi
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
-    if: needs.release.outputs.latest_commit == github.sha
+    if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
-          node-version: 14.x
+          node-version: 22.x
+          package-manager-cache: "false"
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: build-artifact
           path: dist
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Prepare Repository
-        run: mv dist .repo
-      - name: Collect GitHub Metadata
-        run: mv .repo/dist dist
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REF: ${{ github.ref }}
-        run: errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt) --target $GITHUB_REF 2> $errout && true; exitcode=$?; if [ $exitcode -ne 0 ] && ! grep -q "Release.tag_name already exists" $errout; then cat $errout; exit $exitcode; fi
+        run: errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt) --target $GITHUB_SHA 2> $errout && true; exitcode=$?; if [ $exitcode -ne 0 ] && ! grep -q "Release.tag_name already exists" $errout; then cat $errout; exit $exitcode; fi
       - name: Extract Version
         id: extract-version
         if: ${{ failure() }}
         run: echo "VERSION=$(cat dist/version.txt)" >> $GITHUB_OUTPUT
+        shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          labels: failed-release
-          title: Publishing v${{ steps.extract-version.outputs.VERSION }} to GitHub Releases failed
-          body: See https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.extract-version.outputs.VERSION }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: gh issue create --title "Publishing v$VERSION to GitHub Releases failed" --body "See $RUN_URL" --label "failed-release"
   release_npm:
     name: Publish to npm
     needs: release
     runs-on: ubuntu-latest
     permissions:
+      id-token: write
       contents: read
       issues: write
-    if: needs.release.outputs.latest_commit == github.sha
+    if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
-          node-version: 14.x
+          node-version: 22.x
+          package-manager-cache: "false"
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: build-artifact
           path: dist
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Prepare Repository
-        run: mv dist .repo
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: .repo
       - name: Install Dependencies
         run: cd .repo && npm ci
+      - name: Extract build artifact
+        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
+      - name: Move build artifact out of the way
+        run: mv dist dist.old
       - name: Create js artifact
         run: cd .repo && npx projen package:js
-      - name: Collect js Artifact
+      - name: Collect js artifact
         run: mv .repo/dist dist
       - name: Release
         env:
           NPM_DIST_TAG: latest
           NPM_REGISTRY: registry.npmjs.org
+          NPM_CONFIG_PROVENANCE: "true"
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx -p publib@latest publib-npm
       - name: Extract Version
         id: extract-version
         if: ${{ failure() }}
         run: echo "VERSION=$(cat dist/version.txt)" >> $GITHUB_OUTPUT
+        shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          labels: failed-release
-          title: Publishing v${{ steps.extract-version.outputs.VERSION }} to npm failed
-          body: See https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.extract-version.outputs.VERSION }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: gh issue create --title "Publishing v$VERSION to npm failed" --body "See $RUN_URL" --label "failed-release"
   release_pypi:
     name: Publish to PyPI
     needs: release
@@ -146,29 +168,36 @@ jobs:
     permissions:
       contents: read
       issues: write
-    if: needs.release.outputs.latest_commit == github.sha
+    if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
-          node-version: 14.x
-      - uses: actions/setup-python@v4
+          node-version: 22.x
+          package-manager-cache: "false"
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.x
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: build-artifact
           path: dist
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Prepare Repository
-        run: mv dist .repo
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: .repo
       - name: Install Dependencies
         run: cd .repo && npm ci
+      - name: Extract build artifact
+        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
+      - name: Move build artifact out of the way
+        run: mv dist dist.old
       - name: Create python artifact
         run: cd .repo && npx projen package:python
-      - name: Collect python Artifact
+      - name: Collect python artifact
         run: mv .repo/dist dist
       - name: Release
         env:
@@ -179,12 +208,11 @@ jobs:
         id: extract-version
         if: ${{ failure() }}
         run: echo "VERSION=$(cat dist/version.txt)" >> $GITHUB_OUTPUT
+        shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          labels: failed-release
-          title: Publishing v${{ steps.extract-version.outputs.VERSION }} to PyPI failed
-          body: See https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.extract-version.outputs.VERSION }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: gh issue create --title "Publishing v$VERSION to PyPI failed" --body "See $RUN_URL" --label "failed-release"
