@@ -50,6 +50,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   devDeps: ["@types/superagent", "ts-node", "esbuild"],
   deps: [],
   packageManager: NodePackageManager.NPM,
+  npmTrustedPublishing: true,
   description:
     "AWS CDK construct to send notifications for adds, drops, and trades in an ESPN Fantasy Hockey league",
   publishToPypi: {
