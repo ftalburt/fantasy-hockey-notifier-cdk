@@ -64,6 +64,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
 });
 project.setScript("start", "ts-node --project tsconfig.dev.json src/main.ts");
 project.files.push(new TextFile(project, ".nvmrc", { lines: ["22", ""] }));
+// Workaround for npm bug with bundledDependencies + nested bundles in
+// aws-cdk-lib (>=2.238.0) that breaks `npm ci`/`npm install` otherwise.
+project.files.push(
+  new TextFile(project, ".npmrc", { lines: ["legacy-peer-deps=true", ""] })
+);
 // Exclude local .env file and local file for recording last run date
 project.gitignore.exclude(".env", ".lastrun");
 project.npmignore.exclude(".env", ".lastrun");

@@ -55,6 +55,7 @@ codecov.*
 tsconfig.json
 !/API.md
 !/.nvmrc
+!/.npmrc
 .env
 .lastrun
 !/.projenrc.js
