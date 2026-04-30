@@ -18,7 +18,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   keywords: ["lambda", "aws-lambda", "espn", "nhl", "fantasy-hockey", "cdk"],
   codeCov: true,
   releaseFailureIssue: true,
-  workflowNodeVersion: "22.x",
+  workflowNodeVersion: "24.x",
   repositoryUrl: repositoryUrl,
   homepage: `${repositoryUrl}#readme`,
   cdkVersionPinning: false,
