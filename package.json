@@ -68,10 +68,10 @@
     "constructs": "^10.5.0"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1041.0",
-    "@aws-sdk/client-sns": "^3.1041.0",
-    "@aws-sdk/client-ssm": "^3.1041.0",
-    "cdk-iam-floyd": "^0.783.0",
+    "@aws-sdk/client-dynamodb": "^3.1044.0",
+    "@aws-sdk/client-sns": "^3.1044.0",
+    "@aws-sdk/client-ssm": "^3.1044.0",
+    "cdk-iam-floyd": "^0.785.0",
     "dotenv": "^16.6.1",
     "source-map-support": "^0.5.21",
     "superagent": "^7.1.5"
