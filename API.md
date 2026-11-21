@@ -4,6 +4,8 @@
 
 ### FantasyHockeyNotifier <a name="FantasyHockeyNotifier" id="fantasy-hockey-notifier-cdk.FantasyHockeyNotifier"></a>
 
+- *Implements:* constructs.IConstruct, constructs.IDependable
+
 A Lambda function to send notifications for transactions in an ESPN Fantasy Hockey league.
 
 #### Initializers <a name="Initializers" id="fantasy-hockey-notifier-cdk.FantasyHockeyNotifier.Initializer"></a>
